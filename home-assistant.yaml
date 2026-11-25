@@ -1,0 +1,54 @@
+# Merge these entries into the corresponding configuration.yaml sections.
+rest:
+  - resource: !secret ups_bridge_url
+    scan_interval: 15
+    timeout: 5
+    sensor:
+      - name: "UPS Battery"
+        unique_id: cst150uc_battery
+        device_class: battery
+        state_class: measurement
+        unit_of_measurement: "%"
+        availability: "{{ value_json is defined and value_json.battery_percent is number }}"
+        value_template: "{{ value_json.battery_percent }}"
+      - name: "UPS Output Power"
+        unique_id: cst150uc_output_power
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: "W"
+        availability: "{{ value_json is defined and value_json.output_watts is number }}"
+        value_template: "{{ value_json.output_watts }}"
+      - name: "UPS Load"
+        unique_id: cst150uc_load
+        state_class: measurement
+        unit_of_measurement: "%"
+        availability: "{{ value_json is defined and value_json.load_percent is number }}"
+        value_template: "{{ value_json.load_percent }}"
+      - name: "UPS Estimated Runtime"
+        unique_id: cst150uc_runtime
+        device_class: duration
+        unit_of_measurement: "s"
+        availability: "{{ value_json is defined and value_json.runtime_seconds is number }}"
+        value_template: "{{ value_json.runtime_seconds }}"
+    binary_sensor:
+      - name: "UPS Charging"
+        unique_id: cst150uc_charging
+        device_class: battery_charging
+        availability: "{{ value_json is defined and value_json.charging is boolean }}"
+        value_template: "{{ value_json.charging }}"
+      - name: "UPS On Battery"
+        unique_id: cst150uc_on_battery
+        availability: "{{ value_json is defined and value_json.on_battery is boolean }}"
+        value_template: "{{ value_json.on_battery }}"
+
+sensor:
+  - platform: integration
+    source: sensor.ups_output_power
+    name: "UPS Output Energy"
+    unique_id: cst150uc_output_energy
+    unit_prefix: k
+    unit_time: h
+    method: left
+    round: 4
+    max_sub_interval:
+      minutes: 1
